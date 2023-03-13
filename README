@@ -1,1 +1,32 @@
 #QuizApp
+
+Question Table:
+    - Question
+    - a.
+    - b.
+    - c.
+    - d.
+    - Subjects[]
+    - Author
+    - Answer
+    - id
+
+Quiz Table:
+    - Creator
+    - Length
+    - Questions[]   array of ids
+    - id
+
+Functionality:
+    - Add questions to DB*
+    - Delete questions from DB*
+    - Retrieve questions from DB by [Subject, Author, regex?]*
+    - Add quizzes to the DB*
+    - Delete quizzes from the DB*
+    - Modify existing quizzes from the DB*
+    - Filter quizzes by subjects?
+    - Filter questions by subjects?*
+    - Filter questions by authors?*
+
+
+
