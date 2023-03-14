@@ -28,5 +28,13 @@ Functionality:
     - Filter questions by subjects?*
     - Filter questions by authors?*
 
+Instructions:
+    - run psql -U postgres to connect to postgresql server
+    - type \i init.sql to initialize database
+    - type \i uninit.sql to remove database and clean up
 
+Features:
+    - Python & PostgreSQL
+    - psycopg2 library
+    - Factory design pattern
 

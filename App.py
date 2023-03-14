@@ -1,0 +1,402 @@
+import psycopg2
+class Question:
+    def __init__(self, question, a, b, c, d, subjects, author, answer, id):
+        self.question = question
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.subjects = subjects
+        self.author = author
+        self.answer = answer
+        self.id = id
+    
+    def __str__(self):
+
+        return f"<{self.question},{self.a},{self.b},{self.c},{self.d},{self.subjects},{self.author},{self.answer},{str(self.id)}>"
+    
+    def display(self):
+        print("Question: ", self.question)
+        print("A. ", self.a)
+        print("B. ", self.b)
+        print("C. ", self.c)
+        print("D. ", self.d)
+        print("Subjects", str(self.subjects))
+        print("Author: ", self.author)
+        print("QuestionID: ", self.id)
+        print("")
+
+
+    def getID(self):
+
+        return self.id
+    
+    def getQuestion(self):
+        
+        return self.question
+    
+    def ask(self):
+        print(self.question)
+        print("A. " + self.a)
+        print("B. " + self.b)
+        print("C. " + self.c)
+        print("D. " + self.d)
+
+    def solve(self,answer):
+        if(answer == self.answer):
+            print("Correct")
+            return True
+        else:
+            print("Incorrect")
+            return False
+        
+class Quiz:
+    def __init__(self, creator, id, cur):
+        self.creator = creator
+        self.id = id
+        self.questions = []
+        self.questions = self.getQuizz_questionsByQuizID(cur,self.id)
+        self.numQuestions = len(self.questions)
+
+    def __str__(self):
+        
+        return f"<{self.creator},{self.numQuestions},{str(self.id)},{self.questions}>"
+    
+    def display(self):
+        print("Quiz name: ", self.creator)
+        print("Length: ", self.numQuestions)
+        print("QuizID: ", self.id)
+        print("")
+
+    def addQuestion(self,Q):
+        self.questions.append(Q)
+        self.numQuestions = len(self.questions)
+
+    def questionsToIDs(self):
+        
+        out = []
+
+        for i in self.questions:
+            out.append(i.getID())
+
+        return out
+    
+    def ask(self):
+
+        score = 0
+
+        for i in self.questions:
+            i.ask()
+            answer = input("Enter answer:")
+            if(i.solve(answer) == True):
+                score += 1
+            
+
+        print(str(score)+"/"+str(self.numQuestions))
+
+    def getQuizz_questionsByQuizID(self,cursor,quizid):
+        cursor.execute(f"SELECT * FROM questions q WHERE EXISTS(SELECT * FROM quiz_questions qq WHERE qq.QuizID = " + "'" + str(quizid) + "' AND qq.QuestionID = Q.ID);")
+        results = cursor.fetchall()
+    
+        out = []
+
+        for i in results:
+            out.append(Question(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+        return out
+
+
+class Factory:
+    def __init__(self,cursor):
+        temp = self.getCurrentIDs(cursor)
+        self.currentQuizID = temp[0]
+        self.currentQuestionID = temp[1]
+
+    def getCurrentIDs(self,cursor):
+        cursor.execute(f"SELECT current_quiz_id();")
+        current_quiz_id = cursor.fetchone()[0]+1
+        cursor.execute(f"SELECT current_question_id();")
+        current_question_id = cursor.fetchone()[0]+1
+
+        return (current_quiz_id, current_question_id)
+    
+    def refreshIDs(self,cursor):
+        temp = self.getCurrentIDs(cursor)
+        self.currentQuizID = temp[0]
+        self.currentQuestionID = temp[1]
+    
+    def createQuestion(self,cursor):
+        print("Creating a question")
+        question = input("What is the question?\n")
+        a = input("What is option A?\n")
+        b = input("What is option B?\n")
+        c = input("What is option C?\n")
+        d = input("What is option D?\n")
+        subjects = []
+        temp = input("What are the subjects? Type -1 when done entering\n")
+        
+        while(temp != '-1'):
+            subjects.append(temp)
+            temp = input()
+
+        author = input("Who made this question?\n")
+        answer = input("What is the answer?\n")
+        
+        temp = Question(question,a,b,c,d,subjects,author,answer[0],self.currentQuestionID)
+        self.addQuestion(cursor,temp)
+        self.refreshIDs(cursor)
+
+    def deleteQuestion(self,cursor):
+        print("Deleting a question")
+
+        results = self.getQuestions(cursor)
+
+        for i in results:
+            i.display()
+
+        delID = int(input("Which question do you want to delete?\n"))
+        cursor.execute(f"SELECT delete_question("+str(delID)+");")
+
+    def createQuiz(self,cursor):
+        print("Creating a quiz")
+        creator = input("Who is the creator?\n")
+
+        option = input("Filter the question database?\n 1. No Filter\n 2. Filter by subject\n 3. Filter by author\n 4. Find with pattern match\n")
+
+        if(option == '1'):
+            results = self.getQuestions(cursor)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID())
+
+        elif(option == '2'):
+            temp = input("What subject?\n")
+            results = self.getQuestionsBySubject(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " subjects: ",i.subjects)
+
+        elif(option == '3'):
+            temp = input("What author?\n")
+            results = self.getQuestionsByAuthor(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " author: ", i.author)
+
+        elif(option == '4'):
+            temp = input("What pattern?\n")
+            results = self.getQuestionsByPattern(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " pattern: ", temp)
+
+        questions = set()
+        done = input("Type in question id to add to the quiz and -1 when you're done\n")
+
+        while(done != '-1'):
+            questions.add(int(done))
+            done = input()
+        
+        temp = Quiz(creator,self.currentQuizID,cursor)
+        temp.numQuestions = len(questions)
+
+        self.addQuiz(cursor,temp,list(questions))
+
+        Quiz(creator,self.currentQuizID,cursor)
+
+        self.refreshIDs(cursor)
+
+    def deleteQuiz(self,cursor):
+        print("Deleting quiz")
+
+        results = self.getQuizzes(cursor)
+
+        for i in results:
+            i.display()
+            print("")
+
+        temp = input("Type in id of the quiz you want to delete\n")
+
+        cursor.execute(f"SELECT delete_quiz("+"'"+temp+"'"+");")
+
+    def getQuizzes(self,cursor):
+        cursor.execute(f"SELECT * FROM quizzes")
+        results = cursor.fetchall()
+
+        out = []
+
+        for i in results:
+            out.append(Quiz(i[0],int(i[2]),cursor))
+
+        return out    
+
+    def getQuizzesByID(self,cursor,id):
+        cursor.execute(f"SELECT * FROM quizzes WHERE ID = "+"'"+str(id)+"';")
+        results = cursor.fetchone()
+
+        out = Quiz(results[0],results[2],cursor)
+
+        return out    
+
+    def getQuestions(self,cursor):
+        cursor.execute(f"SELECT * FROM questions")
+        results = cursor.fetchall()
+
+        out = []
+
+        for i in results:
+            out.append(Question(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+        return out
+    
+
+    def getQuestionsBySubject(self,cursor,subject):
+        cursor.execute(f"SELECT * FROM questions WHERE "+"'"+subject+"' ~* ANY(Subjects);")
+        results = cursor.fetchall()
+    
+        out = []
+
+        for i in results:
+            out.append(Question(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+        return out
+
+     
+    def getQuestionsByAuthor(self,cursor,author):
+        cursor.execute(f"SELECT * FROM questions WHERE Author ~*"+"'"+author+"';")
+        results = cursor.fetchall()
+    
+        out = []
+
+        for i in results:
+            out.append(Question(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+        return out
+    
+    def getQuestionsByPattern(self,cursor,pattern):
+        cursor.execute(f"SELECT * FROM questions WHERE Question ~*"+"'"+pattern+"';")
+        results = cursor.fetchall()
+   
+        out = []
+
+        for i in results:
+            out.append(Question(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+        return out
+
+    def addQuestion(self,cursor,Q):
+        #print("INSERT INTO questions VALUES("+"'"+question+"'"+","+"'"+a+"'"+","+"'"+b+"'"+","+"'"+c+"'"+","+"'"+d+"'"+","+"ARRAY"+str(subjects)+","+"'"+author+"'"+","+"'"+answer+"'"+","+"'"+id+"'"+");")
+        cursor.execute(f"INSERT INTO questions VALUES("+"'"+Q.question+"'"+","+"'"+Q.a+"'"+","+"'"+Q.b+"'"+","+"'"+Q.c+"'"+","+"'"+Q.d+"'"+","+"ARRAY"+str(Q.subjects)+","+"'"+Q.author+"'"+","+"'"+Q.answer+"'"+","+"'"+str(Q.id)+"'"+");")
+    
+    def addQuiz(self,cursor,Q,questions):
+        #print("SELECT add_quiz("+"'"+creator+"'"+","+"'"+str(numQuestions)+"'"+","+"'"+id+"'"+","+"ARRAY"+str(questions)+");")
+        cursor.execute(f"SELECT add_quiz("+"'"+Q.creator+"'"+","+"'"+str(Q.numQuestions)+"'"+","+"'"+str(Q.id)+"'"+","+"ARRAY"+str(questions)+");")
+        
+    def getQuizz_questions(self,cursor):
+        cursor.execute(f"SELECT * FROM quiz_questions")
+        results = cursor.fetchall()
+        return results
+    
+def main():
+    #setup a connecting to the database
+    
+    dbname = "quiz_app"
+    user = "postgres"
+    password = "super"
+    host = "localhost"
+    port = "5432"
+
+    conn = psycopg2.connect(
+        dbname=dbname, user=user, password=password, host=host, port=port
+    )
+
+    #create a cursor
+    cur = conn.cursor()
+
+    #create a factory object for creating quesations & quizzes
+    fact = Factory(cur)
+
+    print("Current Questions:")
+
+    for i in fact.getQuestions(cur):
+        print(i)
+
+    print("-------------------")
+
+    print("Current Quizzes:")
+
+    for i in fact.getQuizzes(cur):
+        print(i)
+
+    print("-------------------")
+
+    print("Current Quiz Questions:")
+
+    for i in fact.getQuizz_questions(cur):
+        print(i)
+
+    print("-------------------")
+
+    print("currentIDs: ",fact.getCurrentIDs(cur))
+
+    print("-------------------")
+
+    while(True):
+        print("What would you like to do?\n 1. View the question database\n 2. View the quizzes database\n 3. Take a quiz\n 4. Add or remove a question\n 5. Add or remove a quiz\n 6. Exit program")
+        selection = input()
+
+        if(selection == '1'):
+            results = fact.getQuestions(cur)
+            
+            for i in results:
+                i.display()
+
+        elif(selection == '2'):
+            results = fact.getQuizzes(cur)
+
+            for i in results:
+                i.display()
+
+        elif(selection == '3'):
+            results = fact.getQuizzes(cur)
+
+            for i in results:
+                i.display()
+
+            taking = input("Which quiz do you want to take?\n")
+
+            results = fact.getQuizzesByID(cur,int(taking))
+
+            results.ask()
+
+            
+        elif(selection == '4'):
+            choice = input("Do you want to \n1. Add a question?\n2. Delete a question?\n")
+
+            if(choice == '1'):
+                fact.createQuestion(cur)
+            elif(choice == '2'):
+                fact.deleteQuestion(cur)
+
+
+        elif(selection == '5'):
+            choice = input("Do you want to \n1. Create a quiz?\n2. Delete a quiz?\n")
+
+            if(choice == '1'):
+                fact.createQuiz(cur)
+            elif(choice == '2'):
+                fact.deleteQuiz(cur)
+
+        elif(selection == '6'):
+            break
+        else:
+            print("Enter a valid option")
+
+    #commit changes and close cursor & connection
+    conn.commit()
+    cur.close()
+    conn.close()
+
+if __name__ == "__main__":
+    main()
+
