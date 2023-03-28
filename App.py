@@ -411,10 +411,102 @@ class Factory:
         '''
         generic get quiz_questions query
         '''
+
         cursor.execute(f"SELECT * FROM quiz_questions")
         results = cursor.fetchall()
         return results
     
+    def update_question(self,cursor):
+        '''
+        gather user input and do an UPDATE query with new fields
+        '''
+
+        print("|Updating a question|")
+        
+        editID = int(input("What is the id of the question)?"))
+
+        if(editID >= self.currentQuestionID):
+            print("\n[ERROR: QuestionID out of range]\n")
+            return
+
+        question = input("What is the question?\n")
+        a = input("What is option A?\n")
+        b = input("What is option B?\n")
+        c = input("What is option C?\n")
+        d = input("What is option D?\n")
+        subjects = []
+        temp = input("What are the subjects? Type -1 when done entering\n")
+        
+        while(temp != '-1'):
+            subjects.append(temp)
+            temp = input()
+
+        author = input("Who made this question?\n")
+        answer = input("What is the answer?\n")
+        cursor.execute(f"UPDATE questions SET question="+"'"+question+"'"+","+"a="+"'"+a+"'"+","+"b="+"'"+b+"'"+","+"c="+"'"+c+"'"+","+"d="+"'"+d+"'"+","+"subjects="+"ARRAY"+str(subjects)+","+"author='"+author+"'"+","+"answer='"+answer+"' WHERE id = " + str(editID))
+
+    def update_quiz(self,cursor):
+        '''
+        gather user input and do an UPDATE query with new fields
+        additionally we need to update the quiz_questions table
+        '''
+
+        print("|updating a quiz|")
+
+        editID = int(input("What is the id of the quiz?"))
+
+        if(editID >= self.currentQuizID):
+            print("\n[ERROR: QuestionID out of range]\n")
+            return
+        
+        creator = input("Who is the creator?\n")
+
+        option = input("Filter the question database?\n 1.No Filter\n 2.Filter by subject\n 3.Filter by author\n 4.Find with pattern match\n")
+
+        if(option == '1'):
+            results = self.getQuestions(cursor)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID())
+
+        elif(option == '2'):
+            temp = input("What subject?\n")
+            results = self.getQuestionsBySubject(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " subjects: ",i.subjects)
+
+        elif(option == '3'):
+            temp = input("What author?\n")
+            results = self.getQuestionsByAuthor(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " author: ", i.author)
+
+        elif(option == '4'):
+            temp = input("What pattern?\n")
+            results = self.getQuestionsByPattern(cursor,temp)
+
+            for i in results:
+                print(i.getQuestion(), " id: ", i.getID(), " pattern: ", temp)
+
+        questions = set()
+        done = input("Type in question id to add to the quiz and -1 when you're done\n")
+
+        while(done != '-1'):
+            questions.add(int(done))
+            done = input()
+
+            if(int(done) >= self.currentQuestionID):
+                print("\n[ERROR: QuestionID out of range]\n")
+                return
+
+        print("SELECT update_quiz("+"'"+creator+"'"+","+"'"+str(len(questions))+"'"+","+"'"+str(editID)+"'"+","+"ARRAY"+str(questions)+");")
+        cursor.execute(f"SELECT update_quiz("+"'"+creator+"'"+","+"'"+str(len(questions))+"'"+","+"'"+str(editID)+"'"+","+"ARRAY"+str(list(questions))+");")
+
+        
+
+
 def main():
     #setup a connection to the database
     
@@ -493,29 +585,49 @@ def main():
 
             
         elif(selection == '4'):
-            choice = input("Do you want to \n1.Add a question?\n2.Delete a question?\n3.Cancel\n")
+            choice = input("Do you want to \n1.Add a question?\n2.Delete a question?\n3.Update a question?\n4.Cancel\n")
 
             if(choice == '1'):
                 fact.createQuestion(cur)
             elif(choice == '2'):
                 fact.deleteQuestion(cur)
             elif(choice == '3'):
+                results = fact.getQuestions(cur)
+            
+                for i in results:
+                    i.display()
+
+                fact.update_question(cur)
+
+            elif(choice == '4'):
                 continue
             else:
                 print("Select valid option")
 
+            conn.commit()
+
 
         elif(selection == '5'):
-            choice = input("Do you want to \n1.Create a quiz?\n2.Delete a quiz?\n3.Cancel\n")
+            choice = input("Do you want to \n1.Create a quiz?\n2.Delete a quiz?\n3.Update a quiz?\n4.Cancel\n")
 
             if(choice == '1'):
                 fact.createQuiz(cur)
             elif(choice == '2'):
                 fact.deleteQuiz(cur)
             elif(choice == '3'):
+                results = fact.getQuizzes(cur)
+            
+                for i in results:
+                    i.display()
+
+                fact.update_quiz(cur)
+
+            elif(choice == '4'):
                 continue
             else:
                 print("Select valid option")
+
+            conn.commit()
 
         elif(selection == '6'):
             break

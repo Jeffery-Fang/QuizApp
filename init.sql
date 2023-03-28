@@ -281,6 +281,7 @@ END;
 $$
 LANGUAGE plpgsql;
 
+--retrieve current highest question id
 CREATE FUNCTION current_question_id()
 RETURNS INTEGER AS
 $$
@@ -293,6 +294,7 @@ END;
 $$
 LANGUAGE plpgsql;
 
+--retrieve current highest quiz id
 CREATE FUNCTION current_quiz_id()
 RETURNS INTEGER AS
 $$
@@ -301,6 +303,23 @@ BEGIN
     SELECT max(ID)
     FROM quizzes
     );
+END;
+$$
+LANGUAGE plpgsql;
+
+--update a quizzes question list
+CREATE FUNCTION update_quiz(newCreator text, newNumQuestions INTEGER, editID INTEGER, newquestions INTEGER[])
+RETURNS VOID AS
+$$
+DECLARE 
+    i INT;
+BEGIN
+    UPDATE quizzes SET creator = newCreator, numquestions = newNumQuestions WHERE id = editID;
+    DELETE FROM quiz_questions WHERE quizid = editID;
+
+    FOR i IN 1..array_length(newquestions, 1) LOOP
+        INSERT INTO quiz_questions VALUES (editID,newquestions[i]);
+    END LOOP;
 END;
 $$
 LANGUAGE plpgsql;
