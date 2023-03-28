@@ -36,5 +36,5 @@ Instructions:
 Features:
     - Python & PostgreSQL
     - psycopg2 library
-    - Factory design pattern
+    - Fascade design pattern
 

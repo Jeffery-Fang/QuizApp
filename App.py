@@ -1,6 +1,14 @@
 import psycopg2
 class Question:
+    '''
+    question class groups information about a given question entity in the 
+    database schema 
+    '''
     def __init__(self, question, a, b, c, d, subjects, author, answer, id):
+        '''
+        constructor for question class
+        initializes the question with given information
+        '''
         self.question = question
         self.a = a
         self.b = b
@@ -12,10 +20,16 @@ class Question:
         self.id = id
     
     def __str__(self):
+        '''
+        toString for question class
+        '''
 
         return f"<{self.question},{self.a},{self.b},{self.c},{self.d},{self.subjects},{self.author},{self.answer},{str(self.id)}>"
     
     def display(self):
+        '''
+        displays the question in a presentable way
+        '''
         print("Question: ", self.question)
         print("A. ", self.a)
         print("B. ", self.b)
@@ -28,14 +42,24 @@ class Question:
 
 
     def getID(self):
+        '''
+        returns questionID
+        '''
 
         return self.id
     
     def getQuestion(self):
+        '''
+        returns the question
+        '''
         
         return self.question
     
     def ask(self):
+        '''
+        presents the question along with options
+        '''
+
         print(self.question)
         print("A. " + self.a)
         print("B. " + self.b)
@@ -43,6 +67,10 @@ class Question:
         print("D. " + self.d)
 
     def solve(self,answer):
+        '''
+        asks the questions and checks if it's correct
+        '''
+
         if(answer == self.answer):
             print("Correct")
             return True
@@ -51,7 +79,15 @@ class Question:
             return False
         
 class Quiz:
+    '''
+    quiz class groups information about a quiz entity in the 
+    database schema 
+    '''
     def __init__(self, creator, id, cur):
+        '''
+        constructor for quiz class
+        initializes quiz with questions associated with the quizID in the database
+        '''
         self.creator = creator
         self.id = id
         self.questions = []
@@ -59,21 +95,31 @@ class Quiz:
         self.numQuestions = len(self.questions)
 
     def __str__(self):
-        
+        '''
+        toString for quiz class
+        '''
         return f"<{self.creator},{self.numQuestions},{str(self.id)},{self.questions}>"
     
     def display(self):
+        '''
+        diplays information about the quiz in a presentable way
+        '''
         print("Quiz name: ", self.creator)
         print("Length: ", self.numQuestions)
         print("QuizID: ", self.id)
         print("")
 
     def addQuestion(self,Q):
+        '''
+        add a question to the questions list
+        '''
         self.questions.append(Q)
         self.numQuestions = len(self.questions)
 
     def questionsToIDs(self):
-        
+        '''
+        returns the id of all the questions in this quizzes questions list
+        '''
         out = []
 
         for i in self.questions:
@@ -82,7 +128,9 @@ class Quiz:
         return out
     
     def ask(self):
-
+        '''
+        asks this quiz by running ask on all the questions in the questions list
+        '''
         score = 0
 
         for i in self.questions:
@@ -91,10 +139,13 @@ class Quiz:
             if(i.solve(answer) == True):
                 score += 1
             
-
-        print(str(score)+"/"+str(self.numQuestions))
+        print("")
+        print("Score: " + str(score)+"/"+str(self.numQuestions)+"\n")
 
     def getQuizz_questionsByQuizID(self,cursor,quizid):
+        '''
+        returns an array of questiosn associated with this quizID from the database
+        '''
         cursor.execute(f"SELECT * FROM questions q WHERE EXISTS(SELECT * FROM quiz_questions qq WHERE qq.QuizID = " + "'" + str(quizid) + "' AND qq.QuestionID = Q.ID);")
         results = cursor.fetchall()
     
@@ -107,12 +158,22 @@ class Quiz:
 
 
 class Factory:
+    '''
+    factory class simplifies the creation and deletion of questions and quizzes
+    '''
     def __init__(self,cursor):
+        '''
+        constructor for factory class
+        '''
         temp = self.getCurrentIDs(cursor)
         self.currentQuizID = temp[0]
         self.currentQuestionID = temp[1]
 
     def getCurrentIDs(self,cursor):
+        '''
+        gets the highest quizID and questionID in order to prevent
+        repeated IDs
+        '''
         cursor.execute(f"SELECT current_quiz_id();")
         current_quiz_id = cursor.fetchone()[0]+1
         cursor.execute(f"SELECT current_question_id();")
@@ -121,12 +182,18 @@ class Factory:
         return (current_quiz_id, current_question_id)
     
     def refreshIDs(self,cursor):
+        '''
+        refreshs the current IDs
+        '''
         temp = self.getCurrentIDs(cursor)
         self.currentQuizID = temp[0]
         self.currentQuestionID = temp[1]
     
     def createQuestion(self,cursor):
-        print("Creating a question")
+        '''
+        creates a single question with user input and adds it to the database
+        '''
+        print("|Creating a question|")
         question = input("What is the question?\n")
         a = input("What is option A?\n")
         b = input("What is option B?\n")
@@ -147,7 +214,10 @@ class Factory:
         self.refreshIDs(cursor)
 
     def deleteQuestion(self,cursor):
-        print("Deleting a question")
+        '''
+        deletes a question according to questionID and removes it from the database
+        '''
+        print("|Deleting a question|")
 
         results = self.getQuestions(cursor)
 
@@ -158,10 +228,13 @@ class Factory:
         cursor.execute(f"SELECT delete_question("+str(delID)+");")
 
     def createQuiz(self,cursor):
-        print("Creating a quiz")
+        '''
+        create a quiz according to user input and add it to the database
+        '''
+        print("|Creating a quiz|")
         creator = input("Who is the creator?\n")
 
-        option = input("Filter the question database?\n 1. No Filter\n 2. Filter by subject\n 3. Filter by author\n 4. Find with pattern match\n")
+        option = input("Filter the question database?\n 1.No Filter\n 2.Filter by subject\n 3.Filter by author\n 4.Find with pattern match\n")
 
         if(option == '1'):
             results = self.getQuestions(cursor)
@@ -207,7 +280,11 @@ class Factory:
         self.refreshIDs(cursor)
 
     def deleteQuiz(self,cursor):
-        print("Deleting quiz")
+        '''
+        delete a quiz according to quizID and remove it and associated quiz_questions
+        from the database
+        '''
+        print("|Deleting quiz|")
 
         results = self.getQuizzes(cursor)
 
@@ -220,6 +297,9 @@ class Factory:
         cursor.execute(f"SELECT delete_quiz("+"'"+temp+"'"+");")
 
     def getQuizzes(self,cursor):
+        '''
+        retrieve all the quizzes from the database
+        '''
         cursor.execute(f"SELECT * FROM quizzes")
         results = cursor.fetchall()
 
@@ -231,6 +311,9 @@ class Factory:
         return out    
 
     def getQuizzesByID(self,cursor,id):
+        '''
+        retrieve quizzes with the given ID
+        '''
         cursor.execute(f"SELECT * FROM quizzes WHERE ID = "+"'"+str(id)+"';")
         results = cursor.fetchone()
 
@@ -239,6 +322,9 @@ class Factory:
         return out    
 
     def getQuestions(self,cursor):
+        '''
+        retrieve all questions from the database
+        '''
         cursor.execute(f"SELECT * FROM questions")
         results = cursor.fetchall()
 
@@ -251,6 +337,9 @@ class Factory:
     
 
     def getQuestionsBySubject(self,cursor,subject):
+        '''
+        retrieve questions with the given subject
+        '''
         cursor.execute(f"SELECT * FROM questions WHERE "+"'"+subject+"' ~* ANY(Subjects);")
         results = cursor.fetchall()
     
@@ -263,6 +352,9 @@ class Factory:
 
      
     def getQuestionsByAuthor(self,cursor,author):
+        '''
+        retrieve questions with the given author
+        '''
         cursor.execute(f"SELECT * FROM questions WHERE Author ~*"+"'"+author+"';")
         results = cursor.fetchall()
     
@@ -274,6 +366,9 @@ class Factory:
         return out
     
     def getQuestionsByPattern(self,cursor,pattern):
+        '''
+        retrieve questions with the given pattern
+        '''
         cursor.execute(f"SELECT * FROM questions WHERE Question ~*"+"'"+pattern+"';")
         results = cursor.fetchall()
    
@@ -285,20 +380,29 @@ class Factory:
         return out
 
     def addQuestion(self,cursor,Q):
+        '''
+        generic add question query
+        '''
         #print("INSERT INTO questions VALUES("+"'"+question+"'"+","+"'"+a+"'"+","+"'"+b+"'"+","+"'"+c+"'"+","+"'"+d+"'"+","+"ARRAY"+str(subjects)+","+"'"+author+"'"+","+"'"+answer+"'"+","+"'"+id+"'"+");")
         cursor.execute(f"INSERT INTO questions VALUES("+"'"+Q.question+"'"+","+"'"+Q.a+"'"+","+"'"+Q.b+"'"+","+"'"+Q.c+"'"+","+"'"+Q.d+"'"+","+"ARRAY"+str(Q.subjects)+","+"'"+Q.author+"'"+","+"'"+Q.answer+"'"+","+"'"+str(Q.id)+"'"+");")
     
     def addQuiz(self,cursor,Q,questions):
+        '''
+        generic add quiz query
+        '''
         #print("SELECT add_quiz("+"'"+creator+"'"+","+"'"+str(numQuestions)+"'"+","+"'"+id+"'"+","+"ARRAY"+str(questions)+");")
         cursor.execute(f"SELECT add_quiz("+"'"+Q.creator+"'"+","+"'"+str(Q.numQuestions)+"'"+","+"'"+str(Q.id)+"'"+","+"ARRAY"+str(questions)+");")
         
     def getQuizz_questions(self,cursor):
+        '''
+        generic get quiz_questions query
+        '''
         cursor.execute(f"SELECT * FROM quiz_questions")
         results = cursor.fetchall()
         return results
     
 def main():
-    #setup a connecting to the database
+    #setup a connection to the database
     
     dbname = "quiz_app"
     user = "postgres"
@@ -313,7 +417,7 @@ def main():
     #create a cursor
     cur = conn.cursor()
 
-    #create a factory object for creating quesations & quizzes
+    #create a factory object for creating questions & quizzes
     fact = Factory(cur)
 
     print("Current Questions:")
@@ -342,7 +446,7 @@ def main():
     print("-------------------")
 
     while(True):
-        print("What would you like to do?\n 1. View the question database\n 2. View the quizzes database\n 3. Take a quiz\n 4. Add or remove a question\n 5. Add or remove a quiz\n 6. Exit program")
+        print("What would you like to do?\n1.View the question database\n2.View the quizzes database\n3.Take a quiz\n4.Add or remove a question\n5.Add or remove a quiz\n6.Exit program")
         selection = input()
 
         if(selection == '1'):
@@ -371,21 +475,25 @@ def main():
 
             
         elif(selection == '4'):
-            choice = input("Do you want to \n1. Add a question?\n2. Delete a question?\n")
+            choice = input("Do you want to \n1.Add a question?\n2.Delete a question?\n3.Cancel\n")
 
             if(choice == '1'):
                 fact.createQuestion(cur)
             elif(choice == '2'):
                 fact.deleteQuestion(cur)
+            elif(choice == '3'):
+                continue
 
 
         elif(selection == '5'):
-            choice = input("Do you want to \n1. Create a quiz?\n2. Delete a quiz?\n")
+            choice = input("Do you want to \n1.Create a quiz?\n2.Delete a quiz?\n3.Cancel\n")
 
             if(choice == '1'):
                 fact.createQuiz(cur)
             elif(choice == '2'):
                 fact.deleteQuiz(cur)
+            elif(choice == '3'):
+                continue
 
         elif(selection == '6'):
             break
