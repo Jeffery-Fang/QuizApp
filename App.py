@@ -225,6 +225,11 @@ class Factory:
             i.display()
 
         delID = int(input("Which question do you want to delete?\n"))
+
+        if(delID >= self.currentQuestionID):
+            print("\n[ERROR: QuestionID out of range]\n")
+            return
+
         cursor.execute(f"SELECT delete_question("+str(delID)+");")
 
     def createQuiz(self,cursor):
@@ -269,6 +274,10 @@ class Factory:
         while(done != '-1'):
             questions.add(int(done))
             done = input()
+
+            if(int(done) >= self.currentQuestionID):
+                print("\n[ERROR: QuestionID out of range]\n")
+                return
         
         temp = Quiz(creator,self.currentQuizID,cursor)
         temp.numQuestions = len(questions)
@@ -294,6 +303,10 @@ class Factory:
 
         temp = input("Type in id of the quiz you want to delete\n")
 
+        if(int(temp) >= self.currentQuizID):
+            print("\n[ERROR: QuizID out of range]\n")
+            return
+
         cursor.execute(f"SELECT delete_quiz("+"'"+temp+"'"+");")
 
     def getQuizzes(self,cursor):
@@ -314,6 +327,7 @@ class Factory:
         '''
         retrieve quizzes with the given ID
         '''
+
         cursor.execute(f"SELECT * FROM quizzes WHERE ID = "+"'"+str(id)+"';")
         results = cursor.fetchone()
 
@@ -446,7 +460,7 @@ def main():
     print("-------------------")
 
     while(True):
-        print("What would you like to do?\n1.View the question database\n2.View the quizzes database\n3.Take a quiz\n4.Add or remove a question\n5.Add or remove a quiz\n6.Exit program")
+        print("\nWhat would you like to do?\n1.View the question database\n2.View the quizzes database\n3.Take a quiz\n4.Add or remove a question\n5.Add or remove a quiz\n6.Exit program")
         selection = input()
 
         if(selection == '1'):
@@ -469,6 +483,10 @@ def main():
 
             taking = input("Which quiz do you want to take?\n")
 
+            if(int(taking) <= 0 or int(taking) > len(results)):
+                print("\n[ERROR: QuizID out of range]\n")
+                continue
+
             results = fact.getQuizzesByID(cur,int(taking))
 
             results.ask()
@@ -483,6 +501,8 @@ def main():
                 fact.deleteQuestion(cur)
             elif(choice == '3'):
                 continue
+            else:
+                print("Select valid option")
 
 
         elif(selection == '5'):
@@ -494,9 +514,12 @@ def main():
                 fact.deleteQuiz(cur)
             elif(choice == '3'):
                 continue
+            else:
+                print("Select valid option")
 
         elif(selection == '6'):
             break
+
         else:
             print("Enter a valid option")
 

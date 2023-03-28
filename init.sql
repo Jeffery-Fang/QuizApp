@@ -69,14 +69,111 @@ VALUES
     'Default',
     'C',
     3
+),
+(
+    'What language is Python written in?',
+    'C',
+    'C++',
+    'Python',
+    'Java',
+    ARRAY['Programming', 'Engineering'],
+    'Default',
+    'A',
+    4
+),
+(
+    'What is the most popular front-end JavaScript framework?',
+    'Angular',
+    'React',
+    'Vue',
+    'Node',
+    ARRAY['Programming', 'Engineering'],
+    'Default',
+    'B',
+    5
+),
+(
+    'How many credits does a Vandal cost?',
+    '2900',
+    '900',
+    '3700',
+    '450',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'A',
+    6
+),
+(
+    'How much damage does a Phantom headshot do?',
+    '140',
+    '156',
+    '120',
+    'Depends on range',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'D',
+    7
+),
+(
+    'What is the most popular Hypixel minigame?',
+    'Skyblock',
+    'Megawalls',
+    'Bedwars',
+    'Cops and crims',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'A',
+    8
+),
+(
+    'What is the accuracy on the Chambers headhunter when scoped in?',
+    '100%',
+    '95%',
+    '80%',
+    'None of the above',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'A',
+    9
+),
+(
+    'How many credits does a headhunter bullet cost?',
+    '200',
+    '100',
+    '250',
+    '300',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'A',
+    10
+),(
+    'Who is the final boss of Hollow Knight?',
+    'Hollow Knight',
+    'Hornet',
+    'The White King',
+    'The Radiance',
+    ARRAY['Gaming', 'Trivia'],
+    'Default',
+    'D',
+    11
 );
 
 INSERT INTO quizzes(Creator,NumQuestions,ID)
 VALUES 
 (
-    'Default',
+    'Default Engineering',
     3,
     1
+),
+(
+    'Default Programming',
+    2,
+    2
+),
+(
+    'Default Gaming',
+    6,
+    3
 );
 
 INSERT INTO quiz_questions(QuizID,QuestionID)
@@ -89,6 +186,30 @@ VALUES
 ),
 (
     1,3
+),
+(
+    2,4
+),
+(
+    2,5
+),
+(
+    3,6
+),
+(
+    3,7
+),
+(
+    3,8
+),
+(
+    3,9
+),
+(
+    3,10
+),
+(
+    3,11
 );
 
 
