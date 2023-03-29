@@ -20,7 +20,7 @@ CREATE TABLE questions(
 
 --create a quizzes table
 CREATE TABLE quizzes(
-    Creator     VARCHAR(50) NOT NULL,
+    QuizName     VARCHAR(50) NOT NULL,
     NumQuestions    INT NOT NULL,
     ID  INTEGER NOT NULL,
     PRIMARY KEY(ID)
@@ -158,7 +158,7 @@ VALUES
     11
 );
 
-INSERT INTO quizzes(Creator,NumQuestions,ID)
+INSERT INTO quizzes(QuizName,NumQuestions,ID)
 VALUES 
 (
     'Default Engineering',
@@ -212,39 +212,14 @@ VALUES
     3,11
 );
 
-
---search questions by subject
-PREPARE questions_by_subject(text) AS
-SELECT * FROM questions WHERE $1 = ANY(Subjects);
-
---search questions by author
-PREPARE questions_by_author(text) AS
-SELECT * FROM questions WHERE Author = $1;
-
---search questions by id 
-PREPARE questions_by_id(INTEGER) AS
-SELECT * FROM questions WHERE ID = $1;
-
---search questions by regex
-PREPARE questions_by_regex(text) AS
-SELECT * FROM questions WHERE Question ~* $1;
-
---insert question
-PREPARE add_question(text,text,text,text,text,text[],text,text,INTEGER) AS
-INSERT INTO questions VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);
-
---delete question
-PREPARE delete_question(INTEGER) AS
-DELETE FROM questions WHERE ID = $1;
-
 --add quiz
-CREATE FUNCTION add_quiz(Creator text, NumQuestions INTEGER, ID INTEGER, questions INTEGER[])
+CREATE FUNCTION add_quiz(QuizName text, NumQuestions INTEGER, ID INTEGER, questions INTEGER[])
 RETURNS VOID AS
 $$
 DECLARE 
     i INT;
 BEGIN
-    INSERT INTO quizzes VALUES (Creator, NumQuestions, ID);
+    INSERT INTO quizzes VALUES (QuizName, NumQuestions, ID);
 
     FOR i IN 1..array_length(questions, 1) LOOP
         INSERT INTO quiz_questions VALUES (ID,questions[i]);
@@ -252,9 +227,6 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-
-PREPARE add_quiz(text, INTEGER, INTEGER, INTEGER[]) AS
-SELECT add_quiz($1,$2,$3,$4);
 
 --delete quiz
 CREATE FUNCTION delete_quiz(delID INTEGER)
@@ -266,9 +238,6 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-
-PREPARE delete_quiz(INTEGER) AS
-SELECT delete_quiz($1);
 
 --delete quiz
 CREATE FUNCTION delete_question(delID INTEGER)
@@ -308,13 +277,13 @@ $$
 LANGUAGE plpgsql;
 
 --update a quizzes question list
-CREATE FUNCTION update_quiz(newCreator text, newNumQuestions INTEGER, editID INTEGER, newquestions INTEGER[])
+CREATE FUNCTION update_quiz(newQuizName text, newNumQuestions INTEGER, editID INTEGER, newquestions INTEGER[])
 RETURNS VOID AS
 $$
 DECLARE 
     i INT;
 BEGIN
-    UPDATE quizzes SET creator = newCreator, numquestions = newNumQuestions WHERE id = editID;
+    UPDATE quizzes SET QuizName = newQuizName, numquestions = newNumQuestions WHERE id = editID;
     DELETE FROM quiz_questions WHERE quizid = editID;
 
     FOR i IN 1..array_length(newquestions, 1) LOOP
