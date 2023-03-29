@@ -1,40 +1,41 @@
-#QuizApp
-
-Question Table:
-    - Question
-    - a.
-    - b.
-    - c.
-    - d.
-    - Subjects[]
-    - Author
-    - Answer
-    - id
-
-Quiz Table:
-    - Creator
-    - Length
-    - Questions[]   array of ids
-    - id
-
-Functionality:
-    - Add questions to DB*
-    - Delete questions from DB*
-    - Retrieve questions from DB by [Subject, Author, regex?]*
-    - Add quizzes to the DB*
-    - Delete quizzes from the DB*
-    - Modify existing quizzes from the DB*
-    - Filter quizzes by subjects?
-    - Filter questions by subjects?*
-    - Filter questions by authors?*
-
-Instructions:
-    - run psql -U postgres to connect to postgresql server
-    - type \i init.sql to initialize database
-    - type \i uninit.sql to remove database and clean up
+Description:
+    A simple quiz program that uses a PostgreSQL database to store questions
+    and quizzes for studying or practice.
 
 Features:
+    - The user can add, delete or update questions in the database
+    - The user can create quizzes from existing questions with the questions
+    filtered by subject, author or by pattern
+    - The user can delete or update quizzes
+    - The user can test themselves with quizzes or study the questions
+
+Requirements:
+    - PostgreSQL installed
+    - Psycopg2 library installed
+
+Instructions:
+    - Open a terminal in this folder
+    - Run psql -U postgres to connect to PostgreSQL server
+    - Type \i init.sql to initialize database
+    - Type \i uninit.sql to remove database and clean up
+
+Techinical Details:
     - Python & PostgreSQL
-    - psycopg2 library
+    - Psycopg2 library
     - Fascade design pattern
+    - Minimized the number of queries made by the programs by using SQL functions
+
+Technical Features:
+    - The user can create questions and store them in the database
+    - The user can delete questions from the database
+    - The user can update questions in the database
+    - The user can retrieve questions from the database
+    - The user can create quizzes from existing questions with the questions filtered by
+        - Subject
+        - Author
+        - Regex
+    - The user can delete quizzes from the database
+    - The user can update quizzes in the database with new fields and a new list of questions
+    - The user can retrieve quizzes from the database    
+
 

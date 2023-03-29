@@ -37,6 +37,7 @@ class Question:
         print("B. ", self.b)
         print("C. ", self.c)
         print("D. ", self.d)
+        print("Answer: ", self.answer)
         print("Subjects", str(self.subjects))
         print("Author: ", self.author)
         print("QuestionID: ", self.id)
@@ -243,7 +244,7 @@ class Factory:
 
         delID = int(input("Which question do you want to delete?\n"))
 
-        if(delID >= self.currentQuestionID):
+        if(delID >= self.currentQuestionID or delID <= 0):
             print("\n[ERROR: QuestionID out of range]\n")
             return
 
@@ -291,12 +292,13 @@ class Factory:
         done = input("Type in question id to add to the quiz and -1 when you're done\n")
 
         while(done != '-1'):
+            if(int(done) >= self.currentQuestionID or int(done) <= 0):
+                print("\n[ERROR: QuestionID out of range]\n")
+                return
+
             questions.add(int(done))
             done = input()
 
-            if(int(done) >= self.currentQuestionID):
-                print("\n[ERROR: QuestionID out of range]\n")
-                return
         
         temp = Quiz(quizname,self.currentQuizID,cursor)
         temp.numQuestions = len(questions)
@@ -323,7 +325,7 @@ class Factory:
 
         temp = input("Type in id of the quiz you want to delete\n")
 
-        if(int(temp) >= self.currentQuizID):
+        if(int(temp) >= self.currentQuizID or int(temp) <= 0):
             print("\n[ERROR: QuizID out of range]\n")
             return
 
@@ -450,7 +452,7 @@ class Factory:
         
         editID = int(input("What is the id of the question you want to edit?\n"))
 
-        if(editID >= self.currentQuestionID):
+        if(editID >= self.currentQuestionID or editID <= 0):
             print("\n[ERROR: QuestionID out of range]\n")
             return
 
@@ -480,7 +482,7 @@ class Factory:
 
         editID = int(input("What is the id of the quiz?\n"))
 
-        if(editID >= self.currentQuizID):
+        if(editID >= self.currentQuizID or editID <= 0):
             print("\n[ERROR: QuestionID out of range]\n")
             return
         
@@ -519,18 +521,18 @@ class Factory:
         done = input("Type in question id to add to the quiz and -1 when you're done\n")
 
         while(done != '-1'):
-            questions.add(int(done))
-            done = input()
-
-            if(int(done) >= self.currentQuestionID):
+            if(int(done) >= self.currentQuestionID or int(done) <= 0):
                 print("\n[ERROR: QuestionID out of range]\n")
                 return
+
+            questions.add(int(done))
+            done = input()
 
         cursor.execute(f"SELECT update_quiz("+"'"+quizname+"'"+","+"'"+str(len(questions))+"'"+","+"'"+str(editID)+"'"+","+"ARRAY"+str(list(questions))+");")
 
 
 def main():
-    #setup a connection to the database
+    #setup a connection to the database replace with your credentials
     
     dbname = "quiz_app"
     user = "postgres"
@@ -573,7 +575,7 @@ def main():
 
             taking = input("Which quiz do you want to take?\n")
 
-            if(int(taking) <= 0 or int(taking) > len(results)):
+            if(int(taking) <= 0 or int(taking) >= fact.currentQuizID):
                 print("\n[ERROR: QuizID out of range]\n")
                 continue
 
