@@ -1,3 +1,4 @@
+--drop tables & functions
 DROP TABLE quiz_questions;
 DROP TABLE quizzes;
 DROP TABLE questions;

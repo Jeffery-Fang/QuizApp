@@ -14,10 +14,12 @@ Requirements:
     - Psycopg2 library installed
 
 Instructions:
+    - Change the credentials in the main function in App.py to your credentials
     - Open a terminal in this folder
     - Run psql -U postgres to connect to PostgreSQL server
     - Type \i init.sql to initialize database
     - Type \i uninit.sql to remove database and clean up
+    - Now you can run the python program
 
 Techinical Details:
     - Python & PostgreSQL

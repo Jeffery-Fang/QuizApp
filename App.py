@@ -1,9 +1,11 @@
 import psycopg2
+
 class Question:
     '''
     question class groups information about a given question entity in the 
     database schema 
     '''
+
     def __init__(self, question, a, b, c, d, subjects, author, answer, id):
         '''
         constructor for question class
@@ -81,6 +83,7 @@ class Question:
             print("Incorrect\n")
             return False
         
+
 class Quiz:
     '''
     quiz class groups information about a quiz entity in the 
@@ -173,6 +176,7 @@ class Factory:
     '''
     factory class simplifies the creation and deletion of questions and quizzes
     '''
+
     def __init__(self,cursor):
         '''
         constructor for factory class
@@ -287,6 +291,9 @@ class Factory:
 
             for i in results:
                 print(i.getQuestion(), " id: ", i.getID(), " pattern: ", temp)
+        else:
+            print("No option selected")
+            return
 
         questions = set()
         done = input("Type in question id to add to the quiz and -1 when you're done\n")
@@ -516,6 +523,9 @@ class Factory:
 
             for i in results:
                 print(i.getQuestion(), " id: ", i.getID(), " pattern: ", temp)
+        else:
+            print("No option selected")
+            return
 
         questions = set()
         done = input("Type in question id to add to the quiz and -1 when you're done\n")
@@ -582,7 +592,6 @@ def main():
             results = fact.getQuizzesByID(cur,int(taking))
 
             results.ask()
-
             
         elif(selection == '4'):
             choice = input("Do you want to \n1.Add a question?\n2.Delete a question?\n3.Update a question?\n4.Cancel\n")
@@ -605,7 +614,6 @@ def main():
                 print("Select valid option")
 
             conn.commit()
-
 
         elif(selection == '5'):
             choice = input("Do you want to \n1.Create a quiz?\n2.Delete a quiz?\n3.Update a quiz?\n4.Cancel\n")
