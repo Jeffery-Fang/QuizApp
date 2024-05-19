@@ -13,7 +13,7 @@ In order to use this application you will need to have psycopg2 installed.
 
 1. Clone this repository
     ```sh
-    git clone https://github.com/Jeffery-Fang/PersonalWebsite.git
+    git clone https://github.com/Jeffery-Fang/QuizApp.git
     ```
 
 2. Open a terminal in this folder and connect to the PostgreSQL server
