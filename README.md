@@ -39,6 +39,13 @@ In order to use this application you will need to have psycopg2 installed.
 
 ## Gallery & Demonstrations
 
+https://github.com/Jeffery-Fang/QuizApp/assets/126544955/af081baa-84ec-4aab-916a-31b0aad51a42
+
+*General Use*
+
+https://github.com/Jeffery-Fang/QuizApp/assets/126544955/dd9b3436-d028-4623-b066-d72fd5af06ec
+
+*Adding a Quiz*
 
 ## Tools & Technologies
 
